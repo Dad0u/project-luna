@@ -16,19 +16,28 @@ def toint16(b):
 class HW270:
   def __init__(self, sda, scl):
     self.bus = SoftI2C(sda=Pin(sda), scl=Pin(scl))
+    # Enable the sensor
     self.bus.writeto_mem(ADDR, 0x6b, bytes([1]))
+    # Max range for the accelero
+    self.bus.writeto_mem(ADDR, 0x1c, bytes([24]))
+    # Max range for the gyro
+    self.bus.writeto_mem(ADDR, 0x1b, bytes([24]))
+    # Low-pass filter (2 -> ~100Hz)
+    self.bus.writeto_mem(ADDR, 0x1a, bytes([2]))
+    self.gain_gyro = 2000 / 32768 # -> °/s
+    self.gain_accel = 16 * 9.81 / 32768 # m.s-2
 
   @property
   def accel_x(self):
-    return toint16(self.bus.readfrom_mem(ADDR, 0x3b, 2))
+    return self.gain_accel * toint16(self.bus.readfrom_mem(ADDR, 0x3b, 2))
 
   @property
   def accel_y(self):
-    return toint16(self.bus.readfrom_mem(ADDR, 0x3d, 2))
+    return self.gain_accel * toint16(self.bus.readfrom_mem(ADDR, 0x3d, 2))
 
   @property
   def accel_z(self):
-    return toint16(self.bus.readfrom_mem(ADDR, 0x3f, 2))
+    return self.gain_accel * toint16(self.bus.readfrom_mem(ADDR, 0x3f, 2))
 
   @property
   def temp(self):
@@ -36,12 +45,12 @@ class HW270:
 
   @property
   def gyro_x(self):
-    return toint16(self.bus.readfrom_mem(ADDR, 0x43, 2))
+    return self.gain_gyro * toint16(self.bus.readfrom_mem(ADDR, 0x43, 2))
 
   @property
   def gyro_y(self):
-    return toint16(self.bus.readfrom_mem(ADDR, 0x45, 2))
+    return self.gain_gyro * toint16(self.bus.readfrom_mem(ADDR, 0x45, 2))
 
   @property
   def gyro_z(self):
-    return toint16(self.bus.readfrom_mem(ADDR, 0x47, 2))
+    return self.gain_gyro * toint16(self.bus.readfrom_mem(ADDR, 0x47, 2))
