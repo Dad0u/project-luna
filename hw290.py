@@ -13,7 +13,7 @@ def toint16(b):
     return v
 
 
-class HW270:
+class HW290:
   def __init__(self, sda, scl):
     self.bus = SoftI2C(sda=Pin(sda), scl=Pin(scl))
     # Enable the sensor
